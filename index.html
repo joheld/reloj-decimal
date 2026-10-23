@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#090d16">
+  <title>Reloj Digital de Tiempo Decimal | Revolución Francesa (10h)</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230f172a' stroke='%2338bdf8' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='4' fill='%2338bdf8'/%3E%3Cline x1='50' y1='50' x2='50' y2='20' stroke='%2338bdf8' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='72' y2='50' stroke='%23f59e0b' stroke-width='4' stroke-linecap='round'/%3E%3Ctext x='50' y='76' text-anchor='middle' fill='%2394a3b8' font-family='monospace' font-size='14' font-weight='bold'%3E10h%3C/text%3E%3C/svg%3E">
+  
+  <style>
+    /* ==========================================================================
+       VARIABLES Y RESET
+       ========================================================================== */
+    :root {
+      --bg-main: #090d16;
+      --bg-card: #0f172a;
+      --bg-card-hover: #141f36;
+      --bg-elevated: #1e293b;
+      --border-subtle: rgba(148, 163, 184, 0.14);
+      --border-glow: rgba(56, 189, 248, 0.4);
+      
+      --accent-cyan: #38bdf8;
+      --accent-cyan-dark: #0284c7;
+      --accent-gold: #f59e0b;
+      --accent-emerald: #10b981;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, Monaco, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      
+      --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-subtle);
+      --shadow-glow: 0 0 35px -5px rgba(56, 189, 248, 0.25);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56, 189, 248, 0.12), transparent 70%),
+        radial-gradient(circle at 10% 90%, rgba(245, 158, 11, 0.05), transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* ==========================================================================
+       LAYOUT PRINCIPAL
+       ========================================================================== */
+    .app-container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* ==========================================================================
+       CABECERA
+       ========================================================================== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
+    }
+
+    .brand-icon svg {
+      width: 26px;
+      height: 26px;
+      fill: none;
+      stroke: var(--accent-cyan);
+      stroke-width: 2;
+    }
+
+    .brand-text h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .badge-era {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.55rem;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--accent-gold);
+      border-radius: 9999px;
+    }
+
+    .brand-text p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .btn-action:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: rgba(148, 163, 184, 0.3);
+    }
+
+    .btn-action.active {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .btn-action svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    /* ==========================================================================
+       HERO CLOCK (RELOJ DECIMAL PRINCIPAL)
+       ========================================================================== */
+    .hero-card {
+      background: linear-gradient(180deg, var(--bg-card) 0%, rgba(15, 23, 42, 0.85) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 3rem 2rem 2.5rem;
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
+    }
+
+    .clock-tagline {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .clock-tagline::before,
+    .clock-tagline::after {
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: rgba(56, 189, 248, 0.4);
+    }
+
+    /* DÍGITOS GIGANTES */
+    .decimal-digits-wrapper {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums lining-nums;
+      color: var(--text-primary);
+      text-shadow: 0 0 28px rgba(56, 189, 248, 0.4);
+      user-select: all;
+    }
+
+    .digit-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .digit-value {
+      font-size: clamp(3.8rem, 12vw, 6.8rem);
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .colon-separator {
+      font-size: clamp(3.2rem, 10vw, 5.8rem);
+      font-weight: 300;
+      color: rgba(56, 189, 248, 0.6);
+      padding: 0 0.5rem;
+      user-select: none;
+      animation: pulse-colon 1.728s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse-colon {
+      from { opacity: 0.4; }
+      to { opacity: 1; }
+    }
+
+    .subsecond-box {
+      display: inline-flex;
+      align-items: baseline;
+      margin-left: 0.35rem;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      color: var(--accent-gold);
+      font-weight: 600;
+      opacity: 0.95;
+      text-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+      transition: opacity 0.3s ease, width 0.3s ease;
+    }
+
+    .subsecond-dot {
+      color: rgba(245, 158, 11, 0.6);
+      margin-right: 0.1rem;
+    }
+
+    .digits-labels-row {
+      display: flex;
+      justify-content: center;
+      gap: clamp(1rem, 6vw, 3.8rem);
+      margin-top: 1.25rem;
+      width: 100%;
+      max-width: 620px;
+    }
+
+    .digit-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      flex: 1;
+    }
+
+    /* BARRA DE PROGRESO DEL DÍA */
+    .day-progress-container {
+      width: 100%;
+      max-width: 780px;
+      margin-top: 2.5rem;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      font-size: 0.82rem;
+    }
+
+    .progress-title {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .progress-pct-badge {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.2rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 9999px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0284c7, #38bdf8, #f59e0b);
+      border-radius: 9999px;
+      transition: width 0.08s linear;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+
+    /* ESCALA DE HORAS DECIMALES (0 A 10) */
+    .timeline-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.6rem;
+      padding: 0 2px;
+    }
+
+    .tick-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .tick-line {
+      width: 1px;
+      height: 5px;
+      background: rgba(148, 163, 184, 0.3);
+    }
+
+    .tick-node.major .tick-line {
+      height: 8px;
+      background: var(--accent-cyan);
+    }
+
+    .tick-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .tick-node.major .tick-label {
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       PANEL DE COMPARACIÓN (MÉTRICAS SECUNDARIAS)
+       ========================================================================== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 1.4rem 1.25rem;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .metric-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .metric-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .metric-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(148, 163, 184, 0.08);
+      color: var(--text-secondary);
+    }
+
+    .metric-icon svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* ==========================================================================
+       CONVERTIDOR INTERACTIVO BIDIRECCIONAL
+       ========================================================================== */
+    .converter-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .converter-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .converter-title-group h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .converter-title-group p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* PESTAÑAS DE MODO */
+    .converter-tabs {
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--bg-elevated);
+      color: var(--accent-cyan);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* INTERFACES DE CONVERSIÓN */
+    .converter-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem;
+      align-items: stretch;
+    }
+
+    @media (max-width: 768px) {
+      .converter-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .converter-inputs-col,
+    .converter-results-col {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .col-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .input-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .input-field label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .input-field input {
+      width: 100%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.65rem 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-field input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    .converter-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: rgba(148, 163, 184, 0.3);
+    }
+
+    /* RESULTADO CONVERSIÓN */
+    .conversion-main-result {
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .result-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-cyan);
+      margin-bottom: 0.35rem;
+    }
+
+    .result-digits {
+      font-family: var(--font-mono);
+      font-size: 2.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .result-details-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .result-row span:first-child {
+      color: var(--text-muted);
+    }
+
+    .result-row span:last-child {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* PRESETS RAPIDOS */
+    .presets-container {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .presets-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .preset-chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chip-btn {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .chip-btn:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .chip-btn .chip-val {
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+    }
+
+    /* ==========================================================================
+       SECCIÓN PEDAGÓGICA E HISTÓRICA COLAPSABLE
+       ========================================================================== */
+    .accordion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    .accordion-toggle {
+      width: 100%;
+      padding: 1.25rem 1.5rem;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+    }
+
+    .accordion-toggle:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .accordion-arrow {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.3s ease;
+      stroke: var(--text-muted);
+    }
+
+    .accordion-card.open .accordion-arrow {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      display: none;
+      padding: 0 1.5rem 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .accordion-card.open .accordion-content {
+      display: block;
+    }
+
+    .math-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      font-size: 0.82rem;
+    }
+
+    .math-table th,
+    .math-table td {
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .math-table th {
+      color: var(--text-primary);
+      font-weight: 700;
+      background: var(--bg-elevated);
+    }
+
+    .math-table code {
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.08);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    /* ==========================================================================
+       FOOTER & TOAST
+       ========================================================================== */
+    .app-footer {
+      text-align: center;
+      padding-top: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--accent-cyan);
+      color: var(--text-primary);
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.25);
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transform: translateY(120px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .toast svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--accent-cyan);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .app-container {
+        padding: 1.5rem 1rem 3rem;
+        gap: 1.5rem;
+      }
+      .hero-card {
+        padding: 2rem 1rem 1.75rem;
+      }
+      .brand-group {
+        width: 100%;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- CABECERA DE LA APLICACIÓN -->
+    <header class="header">
+      <div class="brand-group">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="12 7 12 12 15 15"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>
+            Reloj de Tiempo Decimal
+            <span class="badge-era">1793 • Año II</span>
+          </h1>
+          <p>Sistema métrico decimal de la Revolución Francesa (10 horas / día)</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Botón para alternar audio tic-tac -->
+        <button id="btn-sound" class="btn-action" title="Activar/desactivar tic-tac acústico por segundo decimal">
+          <svg id="icon-sound-off" viewBox="0 0 24 24">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+          <svg id="icon-sound-on" viewBox="0 0 24 24" style="display: none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+          <span id="label-sound">Tic-Tac</span>
+        </button>
+
+        <!-- Botón para alternar centésimas -->
+        <button id="btn-centis" class="btn-action active" title="Mostrar/ocultar centésimas decimales">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>.ss</span>
+        </button>
+
+        <!-- Botón copiar -->
+        <button id="btn-copy" class="btn-action" title="Copiar lectura decimal actual">
+          <svg viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span>Copiar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- TARJETA PRINCIPAL DEL RELOJ DECIMAL -->
+    <main class="hero-card">
+      <div class="clock-tagline">Temps Décimal En Direct</div>
+
+      <!-- DÍGITOS PRINCIPALES -->
+      <div class="decimal-digits-wrapper" id="clock-display" title="Haz clic en Copiar para capturar este valor">
+        <div class="digit-unit">
+          <span class="digit-value" id="dec-hour">0</span>
+        </div>
+        <span class="colon-separator">:</span>
+        <div class="digit-unit">
+          <span class="digit-value" id="dec-minute">00</span>
+        </div>
+        <span class="colon-separator">:</span>
+        <div class="digit-unit">
+          <span class="digit-value" id="dec-second">00</span>
+        </div>
+        <!-- Centésimas de segundo decimal opcionales -->
+        <div class="subsecond-box" id="subsecond-box">
+          <span class="subsecond-dot">.</span>
+          <span id="dec-centi">00</span>
+        </div>
+      </div>
+
+      <!-- ETIQUETAS DESCRIPTIVAS DE LAS UNIDADES -->
+      <div class="digits-labels-row">
+        <div class="digit-label">Horas (0–9)</div>
+        <div class="digit-label">Minutos (00–99)</div>
+        <div class="digit-label">Segundos (00–99)</div>
+      </div>
+
+      <!-- BARRA DE PROGRESO DEL DÍA -->
+      <div class="day-progress-container">
+        <div class="progress-header">
+          <span class="progress-title">Progreso del Ciclo Solar Diario</span>
+          <span class="progress-pct-badge" id="pct-badge">0.00 %</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+
+        <!-- ESCALA DE HITOS DE 0 A 10 HORAS DECIMALES -->
+        <div class="timeline-ticks">
+          <div class="tick-node major" title="00:00:00 (Medianoche)">
+            <div class="tick-line"></div>
+            <span class="tick-label">0h</span>
+          </div>
+          <div class="tick-node" title="02:24:00">
+            <div class="tick-line"></div>
+            <span class="tick-label">1h</span>
+          </div>
+          <div class="tick-node" title="04:48:00">
+            <div class="tick-line"></div>
+            <span class="tick-label">2h</span>
+          </div>
+          <div class="tick-node" title="07:12:00 (Amanecer / Inicio)">
+            <div class="tick-line"></div>
+            <span class="tick-label">3h</span>
+          </div>
+          <div class="tick-node" title="09:36:00">
+            <div class="tick-line"></div>
+            <span class="tick-label">4h</span>
+          </div>
+          <div class="tick-node major" title="12:00:00 (Mediodía Solar Exacto)">
+            <div class="tick-line"></div>
+            <span class="tick-label">5h</span>
+          </div>
+          <div class="tick-node" title="14:24:00">
+            <div class="tick-line"></div>
+            <span class="tick-label">6h</span>
+          </div>
+          <div class="tick-node" title="16:48:00">
+            <div class="tick-line"></div>
+            <span class="tick-label">7h</span>
+          </div>
+          <div class="tick-node" title="19:12:00 (Atardecer / Cena)">
+            <div class="tick-line"></div>
+            <span class="tick-label">8h</span>
+          </div>
+          <div class="tick-node" title="21:36:00">
+            <div class="tick-line"></div>
+            <span class="tick-label">9h</span>
+          </div>
+          <div class="tick-node major" title="24:00:00 (Reinicio de Jornada)">
+            <div class="tick-line"></div>
+            <span class="tick-label">10h</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- PANEL DE COMPARACIÓN Y MÉTRICAS AUXILIARES -->
+    <section class="metrics-grid">
+      <!-- Hora Estándar 24h -->
+      <div class="metric-card">
+        <div class="metric-head">
+          <span class="metric-title">Hora Estándar Local</span>
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+        </div>
+        <div class="metric-value" id="std-time">00:00:00</div>
+        <div class="metric-sub">
+          <span id="std-date">Cargando fecha...</span>
+        </div>
+      </div>
+
+      <!-- Porcentaje exacto del día -->
+      <div class="metric-card">
+        <div class="metric-head">
+          <span class="metric-title">Fracción del Día</span>
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24">
+              <line x1="19" y1="5" x2="5" y2="19"/>
+              <circle cx="6.5" cy="6.5" r="2.5"/>
+              <circle cx="17.5" cy="17.5" r="2.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="metric-value" id="metric-fraction">00.00 %</div>
+        <div class="metric-sub">
+          <span>Coincide con <strong id="metric-dec-equiv">0.00000</strong> día dec.</span>
+        </div>
+      </div>
+
+      <!-- Unidades Decimales Totales -->
+      <div class="metric-card">
+        <div class="metric-head">
+          <span class="metric-title">Segundos Decimales</span>
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="2" x2="12" y2="12"/>
+            </svg>
+          </div>
+        </div>
+        <div class="metric-value" id="metric-total-units">0</div>
+        <div class="metric-sub">
+          <span>De 100.000 unidades en el día</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONVERTIDOR INTERACTIVO BIDIRECCIONAL -->
+    <section class="converter-card">
+      <div class="converter-head">
+        <div class="converter-title-group">
+          <h2>
+            <svg style="width: 20px; height: 20px; stroke: var(--accent-cyan); fill: none; stroke-width: 2;" viewBox="0 0 24 24">
+              <polyline points="17 1 21 5 17 9"/>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+              <polyline points="7 23 3 19 7 15"/>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+            Convertidor Bidireccional
+          </h2>
+          <p>Transforma al instante entre el formato sexagesimal estándar de 24h y el tiempo decimal republicano.</p>
+        </div>
+
+        <div class="converter-tabs">
+          <button id="tab-std2dec" class="tab-btn active" onclick="switchConverterMode('std2dec')">
+            <span>24h ➔ Decimal</span>
+          </button>
+          <button id="tab-dec2std" class="tab-btn" onclick="switchConverterMode('dec2std')">
+            <span>Decimal ➔ 24h</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="converter-body">
+        <!-- COLUMNA DE ENTRADA -->
+        <div class="converter-inputs-col">
+          <div class="col-title">
+            <span id="inputs-col-heading">Entrada: Hora Estándar (24h)</span>
+            <span style="font-size: 0.7rem; color: var(--accent-gold); font-weight: normal;">Cálculo en vivo</span>
+          </div>
+
+          <!-- Campos de entrada dinámica -->
+          <div class="inputs-grid" id="container-inputs-std">
+            <div class="input-field">
+              <label for="input-std-h">Hora (0-23)</label>
+              <input type="number" id="input-std-h" min="0" max="23" value="12">
+            </div>
+            <div class="input-field">
+              <label for="input-std-m">Minuto (0-59)</label>
+              <input type="number" id="input-std-m" min="0" max="59" value="00">
+            </div>
+            <div class="input-field">
+              <label for="input-std-s">Segundo (0-59)</label>
+              <input type="number" id="input-std-s" min="0" max="59" value="00">
+            </div>
+          </div>
+
+          <!-- Campos para entrada decimal (ocultos inicialmente) -->
+          <div class="inputs-grid" id="container-inputs-dec" style="display: none;">
+            <div class="input-field">
+              <label for="input-dec-h">Hora Dec (0-9)</label>
+              <input type="number" id="input-dec-h" min="0" max="9" value="5">
+            </div>
+            <div class="input-field">
+              <label for="input-dec-m">Minuto Dec (0-99)</label>
+              <input type="number" id="input-dec-m" min="0" max="99" value="00">
+            </div>
+            <div class="input-field">
+              <label for="input-dec-s">Segundo Dec (0-99)</label>
+              <input type="number" id="input-dec-s" min="0" max="99" value="00">
+            </div>
+          </div>
+
+          <div class="converter-actions">
+            <button class="btn-secondary" id="btn-use-now" title="Cargar la hora exacta actual">
+              <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 14 14"/>
+              </svg>
+              <span>Usar Hora Actual</span>
+            </button>
+            <button class="btn-secondary" id="btn-reset-noon" title="Cargar Mediodía Solar (12:00 / 5:00)">
+              <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              <span>Mediodía (12h)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- COLUMNA DE RESULTADOS -->
+        <div class="converter-results-col">
+          <div class="col-title">
+            <span id="results-col-heading">Conversión Resultante</span>
+            <button id="btn-copy-conversion" class="btn-action" style="padding: 0.25rem 0.55rem; font-size: 0.72rem;">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copiar</span>
+            </button>
+          </div>
+
+          <div class="conversion-main-result">
+            <div class="result-badge" id="conv-badge">Tiempo Decimal Equivalente</div>
+            <div class="result-digits" id="conv-main-text">5 : 00 : 00</div>
+          </div>
+
+          <div class="result-details-list">
+            <div class="result-row">
+              <span id="detail-lbl-1">Porcentaje del día:</span>
+              <span id="detail-val-1">50.00 %</span>
+            </div>
+            <div class="result-row">
+              <span id="detail-lbl-2">Segundos totales transcurridos:</span>
+              <span id="detail-val-2">50.000 s decimales</span>
+            </div>
+            <div class="result-row">
+              <span id="detail-lbl-3">Formato 12 Horas equivalente:</span>
+              <span id="detail-val-3">12:00:00 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRESETS RAPIDOS DE HITOS DEL DÍA -->
+      <div class="presets-container">
+        <div class="presets-title">Hitos Históricos y Diarios de Referencia Rápida</div>
+        <div class="preset-chips-grid">
+          <button class="chip-btn" onclick="applyPreset(0, 0, 0)">
+            <span>Medianoche:</span>
+            <span class="chip-val">00:00 = 0:00:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(6, 0, 0)">
+            <span>Madrugada:</span>
+            <span class="chip-val">06:00 = 2:50:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(7, 12, 0)">
+            <span>Amanecer:</span>
+            <span class="chip-val">07:12 = 3:00:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(9, 36, 0)">
+            <span>Media mañana:</span>
+            <span class="chip-val">09:36 = 4:00:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(12, 0, 0)">
+            <span>Mediodía solar:</span>
+            <span class="chip-val">12:00 = 5:00:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(14, 24, 0)">
+            <span>Sobremesa:</span>
+            <span class="chip-val">14:24 = 6:00:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(16, 48, 0)">
+            <span>Tarde laboral:</span>
+            <span class="chip-val">16:48 = 7:00:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(19, 12, 0)">
+            <span>Atardecer / Cena:</span>
+            <span class="chip-val">19:12 = 8:00:00</span>
+          </button>
+          <button class="chip-btn" onclick="applyPreset(21, 36, 0)">
+            <span>Noche:</span>
+            <span class="chip-val">21:36 = 9:00:00</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- GUÍA HISTÓRICA Y MATEMÁTICA COLAPSABLE -->
+    <section class="accordion-card" id="history-accordion">
+      <button class="accordion-toggle" onclick="toggleAccordion('history-accordion')">
+        <span>📖 Fundamento Matemático y Contexto de la Revolución Francesa (1793)</span>
+        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div class="accordion-content">
+        <p>
+          El <strong>4 de Frimario del Año II</strong> (24 de noviembre de 1793), la Convención Nacional de Francia decretó la división decimal del día como parte de su esfuerzo ilustrado por abolir los sistemas medievales fragmentarios y unificar todas las medidas bajo base diez (metro, litro, gramo y tiempo decimal).
+        </p>
+        <p style="margin-top: 0.6rem;">
+          Bajo esta ley revolucionaria:
+        </p>
+        <table class="math-table">
+          <thead>
+            <tr>
+              <th>Unidad Republicana</th>
+              <th>Composición Decimal</th>
+              <th>Equivalencia Sexagesimal (Estándar)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1 Día</strong></td>
+              <td>10 Horas decimales</td>
+              <td>24 horas estándar (86.400 segundos)</td>
+            </tr>
+            <tr>
+              <td><strong>1 Hora Decimal</strong></td>
+              <td>100 Minutos decimales</td>
+              <td>2 horas y 24 minutos estándar (144 minutos)</td>
+            </tr>
+            <tr>
+              <td><strong>1 Minuto Decimal</strong></td>
+              <td>100 Segundos decimales</td>
+              <td>1 minuto y 26,4 segundos estándar (86,4 segundos)</td>
+            </tr>
+            <tr>
+              <td><strong>1 Segundo Decimal</strong></td>
+              <td>100 Centésimas decimales</td>
+              <td><code>0,864 segundos estándar</code> (864 milisegundos)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          <strong>La Elegancia Matemática del Porcentaje:</strong> La gran ventaja teórica de este sistema era que la hora y el porcentaje del día eran exactamente la misma cifra: a las <code>5:00:00</code> decimal ha transcurrido exactamente el <code>50.00%</code> de la jornada; a las <code>7:50:00</code> ha transcurrido el <code>75.00%</code>. Aunque los relojeros fabricaron magníficos relojes de doble esfera, la población francesa nunca se acostumbró a las nuevas horas y la obligatoriedad se suspendió formalmente en 1795.
+        </p>
+      </div>
+    </section>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="app-footer">
+      <p>Reloj Digital de Tiempo Decimal • 100% Autónomo & Offline • Sin dependencias externas</p>
+    </footer>
+
+  </div>
+
+  <!-- NOTIFICACIÓN TOAST FLOTANTE -->
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <span id="toast-message">Copiado al portapapeles</span>
+  </div>
+
+  <!-- ==========================================================================
+       LÓGICA JAVASCRIPT EMBEBIDA (ZERO DEPENDENCIES)
+       ========================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* --------------------------------------------------------------------------
+         ESTADO DE LA APLICACIÓN
+         -------------------------------------------------------------------------- */
+      const state = {
+        showCentis: true,
+        soundEnabled: false,
+        converterMode: 'std2dec', // 'std2dec' | 'dec2std'
+        lastDecimalSecond: -1,
+        audioContext: null
+      };
+
+      /* --------------------------------------------------------------------------
+         REFERENCIAS DEL DOM
+         -------------------------------------------------------------------------- */
+      const dom = {
+        decHour: document.getElementById('dec-hour'),
+        decMinute: document.getElementById('dec-minute'),
+        decSecond: document.getElementById('dec-second'),
+        decCenti: document.getElementById('dec-centi'),
+        subsecondBox: document.getElementById('subsecond-box'),
+        
+        progressFill: document.getElementById('progress-fill'),
+        pctBadge: document.getElementById('pct-badge'),
+        
+        stdTime: document.getElementById('std-time'),
+        stdDate: document.getElementById('std-date'),
+        metricFraction: document.getElementById('metric-fraction'),
+        metricDecEquiv: document.getElementById('metric-dec-equiv'),
+        metricTotalUnits: document.getElementById('metric-total-units'),
+        
+        btnSound: document.getElementById('btn-sound'),
+        iconSoundOff: document.getElementById('icon-sound-off'),
+        iconSoundOn: document.getElementById('icon-sound-on'),
+        btnCentis: document.getElementById('btn-centis'),
+        btnCopy: document.getElementById('btn-copy'),
+        
+        // Convertidor
+        tabStd2Dec: document.getElementById('tab-std2dec'),
+        tabDec2Std: document.getElementById('tab-dec2std'),
+        containerInputsStd: document.getElementById('container-inputs-std'),
+        containerInputsDec: document.getElementById('container-inputs-dec'),
+        inputsColHeading: document.getElementById('inputs-col-heading'),
+        resultsColHeading: document.getElementById('results-col-heading'),
+        convBadge: document.getElementById('conv-badge'),
+        convMainText: document.getElementById('conv-main-text'),
+        detailLbl1: document.getElementById('detail-lbl-1'),
+        detailVal1: document.getElementById('detail-val-1'),
+        detailLbl2: document.getElementById('detail-lbl-2'),
+        detailVal2: document.getElementById('detail-val-2'),
+        detailLbl3: document.getElementById('detail-lbl-3'),
+        detailVal3: document.getElementById('detail-val-3'),
+        
+        inputStdH: document.getElementById('input-std-h'),
+        inputStdM: document.getElementById('input-std-m'),
+        inputStdS: document.getElementById('input-std-s'),
+        
+        inputDecH: document.getElementById('input-dec-h'),
+        inputDecM: document.getElementById('input-dec-m'),
+        inputDecS: document.getElementById('input-dec-s'),
+        
+        btnUseNow: document.getElementById('btn-use-now'),
+        btnResetNoon: document.getElementById('btn-reset-noon'),
+        btnCopyConversion: document.getElementById('btn-copy-conversion'),
+        
+        toast: document.getElementById('toast'),
+        toastMessage: document.getElementById('toast-message')
+      };
+
+      /* --------------------------------------------------------------------------
+         MATEMÁTICAS DEL TIEMPO DECIMAL
+         -------------------------------------------------------------------------- */
+      /**
+       * Calcula el tiempo decimal exacto a partir de un objeto Date
+       * Se aplica protección contra imprecisiones de punto flotante (IEEE 754)
+       * @param {Date} date 
+       * @returns {Object} Desglose completo de unidades estándar y decimales
+       */
+      function calculateDecimalTime(date = new Date()) {
+        const midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+        const elapsedMs = Math.max(0, date.getTime() - midnight.getTime());
+        const elapsedStandardSeconds = elapsedMs / 1000;
+        const dayFraction = (elapsedStandardSeconds % 86400) / 86400;
+        
+        // Multiplicar antes de dividir y redondear a 8 decimales para evitar artefactos (.999999999)
+        const rawDecimalSec = ((elapsedStandardSeconds % 86400) * 100000) / 86400;
+        const totalDecimalSeconds = Math.round(rawDecimalSec * 1e8) / 1e8;
+        
+        const decHour = Math.floor(totalDecimalSeconds / 10000);
+        const decMinute = Math.floor((totalDecimalSeconds % 10000) / 100);
+        const decSecond = Math.floor(totalDecimalSeconds % 100);
+        const decCenti = Math.floor((totalDecimalSeconds % 1) * 100);
+        
+        const dayPercentage = totalDecimalSeconds / 1000;
+
+        return {
+          date,
+          elapsedStandardSeconds,
+          dayFraction,
+          totalDecimalSeconds,
+          decHour,
+          decMinute,
+          decSecond,
+          decCenti,
+          dayPercentage
+        };
+      }
+
+      /**
+       * Formatea enteros a dos dígitos rellenando con ceros
+       */
+      function pad2(num) {
+        return num.toString().padStart(2, '0');
+      }
+
+      /* --------------------------------------------------------------------------
+         SÍNTESIS DE AUDIO PROCEDURAL (WEB AUDIO API)
+         Tic-tac acústico por segundo decimal (0.864s)
+         -------------------------------------------------------------------------- */
+      function playDecimalTick() {
+        if (!state.soundEnabled) return;
+        try {
+          if (!state.audioContext) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            state.audioContext = new AudioCtx();
+          }
+          if (state.audioContext.state === 'suspended') {
+            state.audioContext.resume();
+          }
+
+          const ctx = state.audioContext;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          // Tono breve con ataque instantáneo y decaimiento rápido emulando escape de reloj
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(1400, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.025);
+
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.025);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.026);
+        } catch (e) {
+          console.warn('Audio click error:', e);
+        }
+      }
+
+      /* --------------------------------------------------------------------------
+         BUCLE PRINCIPAL DE ACTUALIZACIÓN EN TIEMPO REAL
+         -------------------------------------------------------------------------- */
+      let lastSecondChecked = -1;
+
+      function renderLoop() {
+        const now = new Date();
+        const data = calculateDecimalTime(now);
+
+        // Actualizar reloj decimal principal
+        dom.decHour.textContent = data.decHour;
+        dom.decMinute.textContent = pad2(data.decMinute);
+        dom.decSecond.textContent = pad2(data.decSecond);
+        
+        if (state.showCentis) {
+          dom.decCenti.textContent = pad2(data.decCenti);
+        }
+
+        // Tictac acústico al cambiar de segundo decimal
+        if (data.decSecond !== lastSecondChecked) {
+          lastSecondChecked = data.decSecond;
+          playDecimalTick();
+        }
+
+        // Barra de progreso y badges
+        const pctFormatted = data.dayPercentage.toFixed(2);
+        dom.progressFill.style.width = `${data.dayPercentage}%`;
+        dom.pctBadge.textContent = `${pctFormatted} %`;
+
+        // Métricas secundarias
+        dom.stdTime.textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
+        
+        const dateOptions = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+        dom.stdDate.textContent = now.toLocaleDateString('es-ES', dateOptions);
+        
+        dom.metricFraction.textContent = `${pctFormatted} %`;
+        dom.metricDecEquiv.textContent = (data.dayFraction).toFixed(5);
+        dom.metricTotalUnits.textContent = Math.floor(data.totalDecimalSeconds).toLocaleString('es-ES');
+
+        requestAnimationFrame(renderLoop);
+      }
+
+      /* --------------------------------------------------------------------------
+         NOTIFICACIONES TOAST
+         -------------------------------------------------------------------------- */
+      let toastTimer = null;
+      function showToast(message) {
+        dom.toastMessage.textContent = message;
+        dom.toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          dom.toast.classList.remove('show');
+        }, 2400);
+      }
+
+      /* --------------------------------------------------------------------------
+         CONVERTIDOR INTERACTIVO
+         -------------------------------------------------------------------------- */
+      window.switchConverterMode = function (mode) {
+        state.converterMode = mode;
+        if (mode === 'std2dec') {
+          dom.tabStd2Dec.classList.add('active');
+          dom.tabDec2Std.classList.remove('active');
+          dom.containerInputsStd.style.display = 'grid';
+          dom.containerInputsDec.style.display = 'none';
+          dom.inputsColHeading.textContent = 'Entrada: Hora Estándar (24h)';
+          dom.resultsColHeading.textContent = 'Tiempo Decimal Resultante';
+          dom.convBadge.textContent = 'Tiempo Decimal Equivalente';
+        } else {
+          dom.tabDec2Std.classList.add('active');
+          dom.tabStd2Dec.classList.remove('active');
+          dom.containerInputsStd.style.display = 'none';
+          dom.containerInputsDec.style.display = 'grid';
+          dom.inputsColHeading.textContent = 'Entrada: Hora Decimal (10h)';
+          dom.resultsColHeading.textContent = 'Tiempo Estándar Resultante (24h)';
+          dom.convBadge.textContent = 'Hora Estándar Equivalente';
+        }
+        updateConverter();
+      };
+
+      function updateConverter() {
+        if (state.converterMode === 'std2dec') {
+          // De Estándar a Decimal
+          let h = parseInt(dom.inputStdH.value, 10);
+          let m = parseInt(dom.inputStdM.value, 10);
+          let s = parseInt(dom.inputStdS.value, 10);
+
+          if (isNaN(h)) h = 0;
+          if (isNaN(m)) m = 0;
+          if (isNaN(s)) s = 0;
+
+          // Clamp
+          h = Math.max(0, Math.min(23, h));
+          m = Math.max(0, Math.min(59, m));
+          s = Math.max(0, Math.min(59, s));
+
+          const totalStdSec = (h * 3600) + (m * 60) + s;
+          const dayFraction = totalStdSec / 86400;
+          const rawDecSec = (totalStdSec * 100000) / 86400;
+          const totalDecSec = Math.round(rawDecSec * 1e8) / 1e8;
+
+          const decH = Math.floor(totalDecSec / 10000);
+          const decM = Math.floor((totalDecSec % 10000) / 100);
+          const decS = Math.floor(totalDecSec % 100);
+          const decC = Math.round((totalDecSec % 1) * 100);
+
+          dom.convMainText.textContent = `${decH} : ${pad2(decM)} : ${pad2(decS)}`;
+          dom.detailLbl1.textContent = 'Porcentaje del día:';
+          dom.detailVal1.textContent = `${(dayFraction * 100).toFixed(3)} %`;
+
+          dom.detailLbl2.textContent = 'Segundos decimales exactos:';
+          dom.detailVal2.textContent = `${totalDecSec.toFixed(2)} / 100.000`;
+
+          const period = h >= 12 ? 'PM' : 'AM';
+          const h12 = h % 12 || 12;
+          dom.detailLbl3.textContent = 'Referencia 12h:';
+          dom.detailVal3.textContent = `${pad2(h12)}:${pad2(m)}:${pad2(s)} ${period}`;
+        } else {
+          // De Decimal a Estándar
+          let decH = parseInt(dom.inputDecH.value, 10);
+          let decM = parseInt(dom.inputDecM.value, 10);
+          let decS = parseInt(dom.inputDecS.value, 10);
+
+          if (isNaN(decH)) decH = 0;
+          if (isNaN(decM)) decM = 0;
+          if (isNaN(decS)) decS = 0;
+
+          // Clamp
+          decH = Math.max(0, Math.min(9, decH));
+          decM = Math.max(0, Math.min(99, decM));
+          decS = Math.max(0, Math.min(99, decS));
+
+          const totalDecSec = (decH * 10000) + (decM * 100) + decS;
+          const dayFraction = totalDecSec / 100000;
+          const rawStdSec = (totalDecSec * 86400) / 100000;
+          const totalStdSec = Math.round(rawStdSec * 1e8) / 1e8;
+
+          let stdH = Math.floor(totalStdSec / 3600);
+          let stdM = Math.floor((totalStdSec % 3600) / 60);
+          let stdS = Math.floor(totalStdSec % 60);
+          let stdMs = Math.round((totalStdSec % 1) * 1000);
+
+          if (stdH >= 24) {
+            stdH = 23;
+            stdM = 59;
+            stdS = 59;
+          }
+
+          dom.convMainText.textContent = `${pad2(stdH)} : ${pad2(stdM)} : ${pad2(stdS)}`;
+          dom.detailLbl1.textContent = 'Porcentaje del día:';
+          dom.detailVal1.textContent = `${(dayFraction * 100).toFixed(3)} %`;
+
+          dom.detailLbl2.textContent = 'Segundos sexagesimales:';
+          dom.detailVal2.textContent = `${totalStdSec.toFixed(1)} / 86.400 s`;
+
+          const period = stdH >= 12 ? 'PM' : 'AM';
+          const h12 = stdH % 12 || 12;
+          dom.detailLbl3.textContent = 'Formato 12 Horas:';
+          dom.detailVal3.textContent = `${pad2(h12)}:${pad2(stdM)}:${pad2(stdS)} ${period}`;
+        }
+      }
+
+      window.applyPreset = function (h, m, s) {
+        if (state.converterMode !== 'std2dec') {
+          switchConverterMode('std2dec');
+        }
+        dom.inputStdH.value = h;
+        dom.inputStdM.value = m;
+        dom.inputStdS.value = s;
+        updateConverter();
+        showToast(`Preset cargado: ${pad2(h)}:${pad2(m)}:${pad2(s)}`);
+      };
+
+      window.toggleAccordion = function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.toggle('open');
+        }
+      };
+
+      /* --------------------------------------------------------------------------
+         LISTENERS Y EVENTOS
+         -------------------------------------------------------------------------- */
+      // Escucha de cambios en inputs
+      [dom.inputStdH, dom.inputStdM, dom.inputStdS, dom.inputDecH, dom.inputDecM, dom.inputDecS].forEach(input => {
+        input.addEventListener('input', updateConverter);
+      });
+
+      // Botón "Usar Hora Actual"
+      dom.btnUseNow.addEventListener('click', () => {
+        const now = new Date();
+        if (state.converterMode === 'std2dec') {
+          dom.inputStdH.value = now.getHours();
+          dom.inputStdM.value = now.getMinutes();
+          dom.inputStdS.value = now.getSeconds();
+        } else {
+          const dec = calculateDecimalTime(now);
+          dom.inputDecH.value = dec.decHour;
+          dom.inputDecM.value = dec.decMinute;
+          dom.inputDecS.value = dec.decSecond;
+        }
+        updateConverter();
+        showToast('Hora actual sincronizada en el convertidor');
+      });
+
+      // Botón "Mediodía"
+      dom.btnResetNoon.addEventListener('click', () => {
+        if (state.converterMode === 'std2dec') {
+          dom.inputStdH.value = 12;
+          dom.inputStdM.value = 0;
+          dom.inputStdS.value = 0;
+        } else {
+          dom.inputDecH.value = 5;
+          dom.inputDecM.value = 0;
+          dom.inputDecS.value = 0;
+        }
+        updateConverter();
+        showToast('Mediodía solar cargado (12h = 5h dec)');
+      });
+
+      // Copiar lectura decimal principal
+      dom.btnCopy.addEventListener('click', () => {
+        const text = `${dom.decHour.textContent}:${dom.decMinute.textContent}:${dom.decSecond.textContent}` + 
+          (state.showCentis ? `.${dom.decCenti.textContent}` : '') + ' dec';
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(`Copiado: ${text}`);
+        }).catch(() => {
+          showToast('Error al acceder al portapapeles');
+        });
+      });
+
+      // Copiar resultado de la conversión
+      dom.btnCopyConversion.addEventListener('click', () => {
+        const text = dom.convMainText.textContent.trim();
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(`Copiado: ${text}`);
+        }).catch(() => {
+          showToast('Error al acceder al portapapeles');
+        });
+      });
+
+      // Toggle centésimas
+      dom.btnCentis.addEventListener('click', () => {
+        state.showCentis = !state.showCentis;
+        dom.subsecondBox.style.display = state.showCentis ? 'inline-flex' : 'none';
+        dom.btnCentis.classList.toggle('active', state.showCentis);
+        showToast(state.showCentis ? 'Centésimas activadas' : 'Centésimas ocultas');
+      });
+
+      // Toggle sonido
+      dom.btnSound.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        dom.btnSound.classList.toggle('active', state.soundEnabled);
+        dom.iconSoundOff.style.display = state.soundEnabled ? 'none' : 'block';
+        dom.iconSoundOn.style.display = state.soundEnabled ? 'block' : 'none';
+        
+        if (state.soundEnabled) {
+          playDecimalTick();
+          showToast('Tic-tac acústico activado');
+        } else {
+          showToast('Tic-tac silenciado');
+        }
+      });
+
+      /* --------------------------------------------------------------------------
+         ARRANQUE INICIAL
+         -------------------------------------------------------------------------- */
+      updateConverter();
+      requestAnimationFrame(renderLoop);
+    })();
+  </script>
+</body>
+</html>
