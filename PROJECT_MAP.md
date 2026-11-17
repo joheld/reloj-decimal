@@ -12,6 +12,7 @@ gitGraph
     commit id: "feat-decimal-clock-core" tag: "v1.0.0"
     commit id: "feat-desktop-shortcuts-and-icon" tag: "v1.1.0"
     commit id: "feat-native-macos-widget" tag: "v1.2.0"
+    commit id: "feat-open-source-github-release" tag: "v1.3.0"
 ```
 
 ---
@@ -24,9 +25,10 @@ gitGraph
 | `CHK-002` | 2026-10-23 | `v1.0.0` | Aplicación web standalone completa (`index.html`) con reloj en tiempo real (`requestAnimationFrame`), protección IEEE-754 contra imprecisiones de punto flotante, panel comparador 24h, porcentaje de día, convertidor interactivo bidireccional, síntesis de audio procedural Web Audio API, diseño Slate Dark Mode responsivo y scripts desacoplados POSIX `start.sh`/`stop.sh` en puerto asignado `5190` | ✅ Completado |
 | `CHK-003` | 2026-10-23 | `v1.1.0` | Creación de lanzadores en el Escritorio: aplicación nativa compilada macOS `Reloj Decimal.app` con icono de esfera decimal de 10h personalizado (`.icns`), lanzador por terminal `Reloj Decimal.command` y script desacoplado `launch-desktop.sh` | ✅ Completado |
 | `CHK-004` | 2026-10-23 | `v1.2.0` | Desarrollo del Widget Nativo para macOS en Swift & AppKit (`Reloj Decimal Widget.app`): elemento de barra de menús (`NSStatusItem`) en tiempo real con 4 formatos configurables, popover translúcido Frosted Glass, panel flotante arrastrable de escritorio (`DesktopWidgetPanel`) con anclaje al wallpaper (`.desktop`) o flotante (`.floating`), y script automatizado de compilación `build-widget.sh` | ✅ Completado |
+| `CHK-005` | 2026-11-17 | `v1.3.0` | Publicación oficial open source en GitHub (`joheld/reloj-decimal`), documentación README ejecutiva y versionado de suite web y widget nativo | ✅ Completado |
 
 ---
 
 ## 🚦 Estado de la Sesión
-- **Estado Actual:** Widget nativo de macOS activo en ejecución (`PID 28446`) y sincronizado con la barra superior de menús y escritorio. Código fuente y binario compilados y versionados.
-- **Siguiente paso:** Presentar al usuario la guía de interacción con el widget nativo y los atajos del menú contextual.
+- **Estado Actual:** 🌐 Repositorio público oficial publicado en GitHub (`joheld/reloj-decimal`). Aplicación web y widget nativo en ejecución local activa en macOS.
+- **Siguiente paso:** Proyecto preservado y mantenido localmente en el equipo según solicitud del usuario.
